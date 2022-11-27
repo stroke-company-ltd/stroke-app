@@ -1,7 +1,23 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:stroke/error_handler.dart';
+import 'package:stroke/shared_prefs.dart';
+import 'package:stroke/widgets/home_page.dart';
 import 'ffi.dart' if (dart.library.html) 'ffi_web.dart';
 
-void main() {
+void main() async {
+  //only required with developer mode.
+  //TODO late initalize callbacks. Enable and disable when switch between dev and normal mode.
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    ErrorHandler.getInstance().onFlutterError(details);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    ErrorHandler.getInstance().onPlatformError(error, stack);
+    return true;
+  };
+  await SharedPrefs.init();
   runApp(const MyApp());
 }
 
@@ -12,21 +28,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          // This is the theme of your application.
+          //
+          // Try running your application with "flutter run". You'll see the
+          // application has a blue toolbar. Then, without quitting the app, try
+          // changing the primarySwatch below to Colors.green and then invoke
+          // "hot reload" (press "r" in the console where you ran "flutter run",
+          // or simply save your changes to "hot reload" in a Flutter IDE).
+          // Notice that the counter didn't reset back to zero; the application
+          // is not restarted.
+          primarySwatch: Colors.blue,
+        ),
+        home: const HomePageScaffold());
   }
 }
 
