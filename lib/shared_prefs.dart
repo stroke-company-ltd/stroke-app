@@ -6,14 +6,19 @@ class SharedPrefs{
   static const String _devModeKey = "developer-mode";
   static const bool _devModeDefault = false;
 
+  final List<Function> lateSets = [];
+
   static SharedPreferences? _prefs;
   
   static Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
   }
 
-  static bool getDeveloperMode(){
-    assert(_prefs != null);
+  static bool? getDeveloperMode(){
+    if(_prefs == null){
+      init();
+      return null;
+    }
     final bool? devMode = _prefs?.getBool(_devModeKey);
     if(devMode == null){
       return _devModeDefault;
@@ -23,7 +28,7 @@ class SharedPrefs{
   }
 
   static Future<void> setDeveloperMode(bool isEnabled) async{
-    assert(_prefs != null);
+    await init();
     await _prefs!.setBool(_devModeKey, isEnabled);
   }
 }
