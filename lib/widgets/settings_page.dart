@@ -14,11 +14,13 @@ class SettingsPage extends HomePage {
 }
 
 class _SettingsPageWidget extends StatelessWidget {
+
   const _SettingsPageWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     DeveloperModeSwitch devMode = context.watch<DeveloperModeSwitch>();
+
     return SettingsList(
       sections: [
         SettingsSection(

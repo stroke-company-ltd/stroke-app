@@ -7,7 +7,6 @@ import 'ffi.dart' if (dart.library.html) 'ffi_web.dart';
 
 void main() async {
   //only required with developer mode.
-  //TODO late initalize callbacks. Enable and disable when switch between dev and normal mode.
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
     ErrorHandler.getInstance().onFlutterError(details);

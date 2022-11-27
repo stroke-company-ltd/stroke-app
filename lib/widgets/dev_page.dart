@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:settings_ui/settings_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stroke/error_handler.dart';
 import 'package:stroke/shared_prefs.dart';
 import 'package:stroke/widgets/home_page.dart';
 
@@ -70,10 +73,127 @@ class DevHomePage extends HomePage {
 }
 
 class _DevHomePageWidget extends StatelessWidget {
+  //static final GlobalKey<NavigatorState> _navKey = GlobalKey();
   const _DevHomePageWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Text("TODO");
+    return Navigator(
+      //key: _navKey,
+      onGenerateRoute: (settings) {
+        Widget page;
+        switch (settings.name) {
+          case "/dev/errors":
+            page = _DevModeErrorPage();
+            break;
+          default:
+            page = const _DevModeMainPage();
+        }
+        return PageRouteBuilder(
+            pageBuilder: (_, __, ___) => page,
+            transitionDuration: const Duration(seconds: 0));
+      },
+    );
+  }
+}
+
+class _DevModeMainPage extends StatelessWidget {
+  const _DevModeMainPage({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("DeveloperMode")),
+      body: SettingsList(
+        sections: [
+          SettingsSection(
+            tiles: [
+              SettingsTile.navigation(
+                title: const Text("Errors"),
+                trailing: Builder(builder: (context) {
+                  ErrorHandler errorHandler = context.watch<ErrorHandler>();
+                  return Container(
+                    child: Text("${errorHandler.errorCount}"),
+                    padding: const EdgeInsets.all(10),
+                    decoration: const ShapeDecoration(
+                        shape: CircleBorder(), color: Colors.grey),
+                  );
+                }),
+                onPressed: ((context) {
+                  Navigator.pushNamed(context, "/dev/errors");
+                }),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _DevModeErrorPage extends StatelessWidget {
+  final ScrollController controller = ScrollController();
+  _DevModeErrorPage({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: const Text("Errors")),
+        body: Builder(builder: (context) {
+          ErrorHandler errorHandler = context.watch<ErrorHandler>();
+          List<Widget> children = [];
+          for (var error in errorHandler.errors) {
+            children.add(
+              ChangeNotifierProvider(
+                create: (_) => error,
+                child: Container(
+                  padding: const EdgeInsets.only(left: 10),
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                          //padding: const EdgeInsets.all(10),
+                          width: 40,
+                          height: 40,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: const ShapeDecoration(
+                            color: Colors.grey,
+                            shape: CircleBorder(),
+                          ),
+                          child: Builder(builder: (context) {
+                            return Center(
+                                child: Text(
+                                    "${error.count}"));
+                          })),
+                      Flexible(
+                          child: Column(
+                        children: [
+                          Text(
+                            error.summary,
+                            textAlign: TextAlign.left,
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                            textScaleFactor: 1,
+                          ),
+                          Text(
+                            error.lineSummary,
+                            textAlign: TextAlign.left,
+                            textScaleFactor: 0.7,
+                          ),
+                        ],
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                      ))
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          return ListView(
+              padding: const EdgeInsets.only(top: 10),
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: children,
+              controller: controller,
+              scrollDirection: Axis.vertical);
+        }));
   }
 }
