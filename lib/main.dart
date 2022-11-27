@@ -17,7 +17,7 @@ void main() async {
     ErrorHandler.getInstance().onPlatformError(error, stack);
     return true;
   };
-  await SharedPrefs.init();
+  //await SharedPrefs.init();
   runApp(const MyApp());
 }
 
