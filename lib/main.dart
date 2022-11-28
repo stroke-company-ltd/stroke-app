@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
@@ -9,17 +9,8 @@ import 'ffi.dart' if (dart.library.html) 'ffi_web.dart';
 
 void main() async {
   //only required with developer mode.
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    ErrorHandler.getInstance().onFlutterError(details);
-  };
-
-  PlatformDispatcher.instance.onError = (error, stack) {
-    ErrorHandler.getInstance().onPlatformError(error, stack);
-    return true;
-  };
-  Timer.periodic(const Duration(seconds: 1), (_) => Console.log("Hello, World!"));
-
+  ErrorHandler.init();
+  Console.init();
   runApp(const MyApp());
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
+import 'package:stroke/stroke_colors.dart';
 import 'package:stroke/widgets/checklist_page.dart';
 import 'package:stroke/widgets/dev_page.dart';
 import 'package:stroke/widgets/settings_page.dart';
@@ -21,75 +22,87 @@ class HomePageScaffold extends StatelessWidget {
                 ], index: HomePageIndex(index: 0))),
         ChangeNotifierProvider(create: (_) => ErrorHandler.getInstance()),
         ChangeNotifierProvider(create: (_) => Console.instance),
-        ChangeNotifierProvider(
-            create: (_) => DeveloperModeSwitch.fromPrefs())
+        ChangeNotifierProvider(create: (_) => DeveloperModeSwitch.fromPrefs())
         //root state.
       ],
-      child: Builder(builder: (context) {
-        //enable developer page?
-        DeveloperModeSwitch devMode = context.watch<DeveloperModeSwitch>();
-        if (devMode.isEnabled &&
-            !context.read<HomePages>().hasPage<DevHomePage>()) {
-          SchedulerBinding.instance.addPostFrameCallback((_) =>
-              context.read<HomePages>().addHomePage(homePage: DevHomePage()));
-        } else if (!devMode.isEnabled &&
-            context.read<HomePages>().hasPage<DevHomePage>()) {
-          SchedulerBinding.instance.addPostFrameCallback((_) =>
-              context.read<HomePages>().removeHomePage<DevHomePage>());
-        }
-        return Scaffold(
-          body: Builder(builder: (context) {
-            final HomePages homePages = context.watch<HomePages>();
-            final List<Widget> children = homePages.pages
-                .map((page) => MultiProvider(providers: [
-                      ChangeNotifierProvider(create: (_) => page.container),
-                      ChangeNotifierProvider(create: (_) => page.metadata)
-                    ], child: page.container.createBuilder()))
-                .toList();
+      child: Builder(
+        builder: (context) {
+          //enable developer page?
+          DeveloperModeSwitch devMode = context.watch<DeveloperModeSwitch>();
+          if (devMode.isEnabled &&
+              !context.read<HomePages>().hasPage<DevHomePage>()) {
+            SchedulerBinding.instance.addPostFrameCallback((_) =>
+                context.read<HomePages>().addHomePage(homePage: DevHomePage()));
+          } else if (!devMode.isEnabled &&
+              context.read<HomePages>().hasPage<DevHomePage>()) {
+            SchedulerBinding.instance.addPostFrameCallback(
+                (_) => context.read<HomePages>().removeHomePage<DevHomePage>());
+          }
+          return Scaffold(
+            body: Builder(builder: (context) {
+              final HomePages homePages = context.watch<HomePages>();
+              final List<Widget> children = homePages.pages
+                  .map((page) => MultiProvider(providers: [
+                        ChangeNotifierProvider(create: (_) => page.container),
+                        ChangeNotifierProvider(create: (_) => page.metadata)
+                      ], child: page.container.createBuilder()))
+                  .toList();
 
-            return ChangeNotifierProvider(
-                create: (_) => homePages.pageIndex, //provides HomePageIndex
-                child: Builder(builder: (context) {
-                  return IndexedStack(
-                      index: context.watch<HomePageIndex>().index,
-                      children: children);
-                }));
-          }),
-          bottomNavigationBar: Builder(builder: (context) {
-            final HomePages homePages = context.watch<HomePages>();
-            context.watch<DeveloperModeSwitch>();
-            return ChangeNotifierProvider(
-              create: (_) => HomePageMetadataNotifier(
-                metadatas:
-                    homePages.pages.map((page) => page.metadata).toList(),
-              ),
-              child: Builder(builder: (context) {
-                context.watch<HomePageMetadataNotifier>();
+              return ChangeNotifierProvider(
+                  create: (_) => homePages.pageIndex, //provides HomePageIndex
+                  child: Builder(builder: (context) {
+                    return IndexedStack(
+                        index: context.watch<HomePageIndex>().index,
+                        children: children);
+                  }));
+            }),
+            bottomNavigationBar: Builder(
+              builder: (context) {
+                final HomePages homePages = context.watch<HomePages>();
                 context.watch<DeveloperModeSwitch>();
-                final List<BottomNavigationBarItem> items = homePages.pages
-                    .map((page) => BottomNavigationBarItem(
-                        icon: page.metadata.icon, label: page.metadata.label))
-                    .toList();
                 return ChangeNotifierProvider(
+                  create: (_) => HomePageMetadataNotifier(
+                    metadatas:
+                        homePages.pages.map((page) => page.metadata).toList(),
+                  ),
+                  child: ChangeNotifierProvider(
                     create: (_) => homePages.pageIndex,
-                    child: Builder(builder: (context) {
-                      HomePageIndex pageIndex = context.watch<HomePageIndex>();
-                      context.watch<DeveloperModeSwitch>();
-                      return BottomNavigationBar(
-                        type : BottomNavigationBarType.fixed,
-                        backgroundColor: Colors.black,
-                        selectedItemColor: Colors.white,
-                        unselectedItemColor: Colors.grey,
-                        items: items,
-                        currentIndex: pageIndex.index,
-                        onTap: (idx) => pageIndex.index = idx,
-                      );
-                    }));
-              }),
-            );
-          }),
-        );
-      }),
+                    child: Builder(
+                      builder: (context) {
+                        HomePageIndex pageIndex =
+                            context.watch<HomePageIndex>();
+                        context.watch<DeveloperModeSwitch>();
+
+                        final List<BottomNavigationBarItem> items = [];
+                        for (int i = 0; i < homePages.pages.length; i++) {
+                          items.add(BottomNavigationBarItem(
+                            icon: i == pageIndex.index
+                                ? homePages.pages[i].metadata.iconSelected
+                                : homePages.pages[i].metadata.iconUnselected,
+                            label: homePages.pages[i].metadata.label,
+                            backgroundColor: homePages.pages[i].metadata.primaryColor
+                          ));
+                        }
+
+                        return BottomNavigationBar(
+                          type: BottomNavigationBarType.shifting,
+                          selectedItemColor: Colors.white,
+                          unselectedItemColor: Colors.white70,
+                          showSelectedLabels: false,
+                          showUnselectedLabels: false,
+                          items: items,
+                          currentIndex: pageIndex.index,
+                          onTap: (idx) => pageIndex.index = idx,
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -164,16 +177,31 @@ class HomePages extends ChangeNotifier {
 }
 
 class HomePageMetadata extends ChangeNotifier {
-  Icon _icon;
+  Icon _iconSelected;
+  Icon _iconUnselected;
+  Color _primaryColor;
   String _label;
-  HomePageMetadata({required Icon icon, required String label})
+  HomePageMetadata(
+      {required Icon iconSelected,
+      required Icon iconUnselected,
+      required String label, 
+      Color? primaryColor})
       : _label = label,
-        _icon = icon;
+        _iconSelected = iconSelected,
+        _iconUnselected = iconUnselected,
+        _primaryColor = primaryColor ?? StrokeColors.primaryBackground;
 
-  Icon get icon => _icon;
-  set icon(Icon value) {
-    if (identical(_icon, value)) return;
-    _icon = value;
+  Icon get iconSelected => _iconSelected;
+  set iconSelected(Icon value) {
+    if (identical(_iconSelected, value)) return;
+    _iconSelected = value;
+    notifyListeners();
+  }
+
+  Icon get iconUnselected => _iconUnselected;
+  set iconUnselected(Icon value) {
+    if (identical(_iconUnselected, value)) return;
+    _iconUnselected = value;
     notifyListeners();
   }
 
@@ -181,6 +209,13 @@ class HomePageMetadata extends ChangeNotifier {
   set label(String value) {
     if (_label == value) return;
     _label = value;
+    notifyListeners();
+  }
+
+  Color get primaryColor => _primaryColor;
+  set primaryColor(Color value){
+    if(value == _primaryColor)return;
+    _primaryColor = value;
     notifyListeners();
   }
 }
@@ -192,8 +227,15 @@ class HomePage {
   HomePage({required this.metadata, required this.container});
 
   HomePage.from(
-      {required String label, required Icon icon, required Widget widget})
-      : metadata = HomePageMetadata(icon: icon, label: label),
+      {required String label,
+      required Icon iconSelected,
+      required Icon iconUnselected,
+      required Widget widget,
+      Color? primaryColor})
+      : metadata = HomePageMetadata(
+            iconSelected: iconSelected,
+            iconUnselected: iconUnselected,
+            label: label, primaryColor : primaryColor),
         container = HomePageContainer(widget: widget);
 }
 

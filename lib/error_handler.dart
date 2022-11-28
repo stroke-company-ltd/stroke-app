@@ -1,11 +1,25 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
 class ErrorHandler extends ChangeNotifier {
   static ErrorHandler? _instance;
 
+  static void init() => getInstance();
+
   static ErrorHandler getInstance() {
-    return _instance ??= ErrorHandler._();
+    if (_instance == null) {
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        ErrorHandler.getInstance().onFlutterError(details);
+      };
+
+      PlatformDispatcher.instance.onError = (error, stack) {
+        ErrorHandler.getInstance().onPlatformError(error, stack);
+        return true;
+      };
+      return _instance = ErrorHandler._();
+    }
+    return _instance!;
   }
 
   int _errorCount = 0;
@@ -75,10 +89,14 @@ class ErrorHandler extends ChangeNotifier {
 
 abstract class AbstractError extends ChangeNotifier {
   int _count = 1;
+  int time;
+
+  AbstractError() : time = DateTime.now().millisecondsSinceEpoch;
 
   int get count => _count;
   void incrementCount() {
     _count++;
+    time = DateTime.now().millisecondsSinceEpoch;
     notifyListeners();
   }
 

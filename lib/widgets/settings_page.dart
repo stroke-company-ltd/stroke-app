@@ -9,7 +9,8 @@ class SettingsPage extends HomePage {
   SettingsPage()
       : super.from(
             label: "settings",
-            icon: const Icon(Icons.settings),
+            iconSelected: const Icon(Icons.settings),
+            iconUnselected: const Icon(Icons.settings_outlined),
             widget: const _SettingsPageWidget());
 }
 
