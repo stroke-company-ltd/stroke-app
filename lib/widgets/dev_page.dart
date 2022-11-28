@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
 import 'package:stroke/shared_prefs.dart';
 import 'package:stroke/widgets/home_page.dart';
@@ -11,15 +12,13 @@ class DeveloperModeSwitch extends ChangeNotifier {
   static SharedPreferences? _prefs;
 
   bool _enabled;
-  final bool _usePrefs;
 
-  DeveloperModeSwitch({required bool enabled, bool usePrefs = false})
-      : _enabled = enabled,
-        _usePrefs = usePrefs;
+  DeveloperModeSwitch({required bool enabled})
+      : _enabled = enabled;
 
   factory DeveloperModeSwitch.fromPrefs() {
     if (_prefs == null) {
-      var tmp = DeveloperModeSwitch(enabled: false, usePrefs: true);
+      var tmp = DeveloperModeSwitch(enabled: false);
       //schedule pref init.
       () async {
         _prefs = await SharedPreferences.getInstance();
@@ -33,7 +32,7 @@ class DeveloperModeSwitch extends ChangeNotifier {
     } else {
       bool? devMode = _prefs!.getBool(_prefKey);
       devMode ??= false;
-      return DeveloperModeSwitch(enabled: devMode, usePrefs: true);
+      return DeveloperModeSwitch(enabled: devMode);
     }
   }
 
@@ -86,6 +85,9 @@ class _DevHomePageWidget extends StatelessWidget {
           case "/dev/errors":
             page = _DevModeErrorPage();
             break;
+          case "/dev/console":
+            page = _DevModeConsolePage();
+            break;
           default:
             page = const _DevModeMainPage();
         }
@@ -121,6 +123,21 @@ class _DevModeMainPage extends StatelessWidget {
                 onPressed: ((context) {
                   Navigator.pushNamed(context, "/dev/errors");
                 }),
+              ),
+              SettingsTile.navigation(
+                title: const Text("Console"),
+                trailing: Builder(builder: (context) {
+                  context.watch<Console>();
+                  return Container(
+                    child: Text("${Console.logSize()}"),
+                    padding: const EdgeInsets.all(10),
+                    decoration: const ShapeDecoration(
+                        shape: CircleBorder(), color: Colors.grey),
+                  );
+                }),
+                onPressed: ((context) {
+                  Navigator.pushNamed(context, "/dev/console");
+                }),
               )
             ],
           )
@@ -136,54 +153,50 @@ class _DevModeErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Errors")),
-        body: Builder(builder: (context) {
+      appBar: AppBar(title: const Text("Errors")),
+      body: Builder(
+        builder: (context) {
           ErrorHandler errorHandler = context.watch<ErrorHandler>();
           List<Widget> children = [];
           for (var error in errorHandler.errors) {
             children.add(
-              ChangeNotifierProvider(
-                create: (_) => error,
-                child: Container(
-                  padding: const EdgeInsets.only(left: 10),
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    children: [
-                      Container(
-                          //padding: const EdgeInsets.all(10),
-                          width: 40,
-                          height: 40,
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: const ShapeDecoration(
-                            color: Colors.grey,
-                            shape: CircleBorder(),
-                          ),
-                          child: Builder(builder: (context) {
-                            return Center(
-                                child: Text(
-                                    "${error.count}"));
-                          })),
-                      Flexible(
-                          child: Column(
-                        children: [
-                          Text(
-                            error.summary,
-                            textAlign: TextAlign.left,
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            textScaleFactor: 1,
-                          ),
-                          Text(
-                            error.lineSummary,
-                            textAlign: TextAlign.left,
-                            textScaleFactor: 0.7,
-                          ),
-                        ],
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                      ))
-                    ],
-                  ),
+              Container(
+                padding: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Container(
+                        //padding: const EdgeInsets.all(10),
+                        width: 40,
+                        height: 40,
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: const ShapeDecoration(
+                          color: Colors.grey,
+                          shape: CircleBorder(),
+                        ),
+                        child: Builder(builder: (context) {
+                          return Center(child: Text("${error.count}"));
+                        })),
+                    Flexible(
+                        child: Column(
+                      children: [
+                        Text(
+                          error.summary,
+                          textAlign: TextAlign.left,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                          textScaleFactor: 1,
+                        ),
+                        Text(
+                          error.lineSummary,
+                          textAlign: TextAlign.left,
+                          textScaleFactor: 0.7,
+                        ),
+                      ],
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                    ))
+                  ],
                 ),
               ),
             );
@@ -194,6 +207,77 @@ class _DevModeErrorPage extends StatelessWidget {
               children: children,
               controller: controller,
               scrollDirection: Axis.vertical);
-        }));
+        },
+      ),
+    );
+  }
+}
+
+class _DevModeConsolePage extends StatelessWidget {
+  final ScrollController controller = ScrollController();
+  _DevModeConsolePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Console"),
+      ),
+      body: Builder(
+        builder: (context) {
+          context.watch<Console>();
+
+          List<Widget> children = [];
+          for (var log in Console.getLogs()) {
+            children.add(Container(
+              padding: const EdgeInsets.only(left: 10),
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                children: [
+                  Container(
+                      //padding: const EdgeInsets.all(10),
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: const ShapeDecoration(
+                        color: Colors.grey,
+                        shape: CircleBorder(),
+                      ),
+                      child: Builder(builder: (context) {
+                        return Center(child: Text("${log.count}"));
+                      })),
+                  Flexible(
+                      child: Column(
+                    children: [
+                      Text(
+                        log.log,
+                        textAlign: TextAlign.left,
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                        textScaleFactor: 1,
+                      ),
+                      Text(
+                        log.line,
+                        textAlign: TextAlign.left,
+                        textScaleFactor: 0.7,
+                      ),
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                  ))
+                ],
+              ),
+            ));
+          }
+
+          return ListView(
+              padding: const EdgeInsets.only(top: 10),
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: children,
+              controller: controller,
+              scrollDirection: Axis.vertical);
+        },
+      ),
+    );
   }
 }

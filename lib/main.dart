@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
-import 'package:stroke/shared_prefs.dart';
 import 'package:stroke/widgets/home_page.dart';
 import 'ffi.dart' if (dart.library.html) 'ffi_web.dart';
 
@@ -16,7 +18,8 @@ void main() async {
     ErrorHandler.getInstance().onPlatformError(error, stack);
     return true;
   };
-  //await SharedPrefs.init();
+  Timer.periodic(const Duration(seconds: 1), (_) => Console.log("Hello, World!"));
+
   runApp(const MyApp());
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
 import 'package:stroke/widgets/checklist_page.dart';
 import 'package:stroke/widgets/dev_page.dart';
@@ -19,6 +20,7 @@ class HomePageScaffold extends StatelessWidget {
                   SettingsPage(),
                 ], index: HomePageIndex(index: 0))),
         ChangeNotifierProvider(create: (_) => ErrorHandler.getInstance()),
+        ChangeNotifierProvider(create: (_) => Console.instance),
         ChangeNotifierProvider(
             create: (_) => DeveloperModeSwitch.fromPrefs())
         //root state.
@@ -35,9 +37,6 @@ class HomePageScaffold extends StatelessWidget {
           SchedulerBinding.instance.addPostFrameCallback((_) =>
               context.read<HomePages>().removeHomePage<DevHomePage>());
         }
-
-        print(context.read<HomePages>().pages);
-
         return Scaffold(
           body: Builder(builder: (context) {
             final HomePages homePages = context.watch<HomePages>();

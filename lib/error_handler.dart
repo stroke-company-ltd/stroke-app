@@ -18,7 +18,6 @@ class ErrorHandler extends ChangeNotifier {
   ErrorHandler._() : _errors = [];
 
   void afterBuildFrame() {
-    print("AFTER BUILD FRAME");
     hasNewError = false;
     for (var op in postops) {
       op();
