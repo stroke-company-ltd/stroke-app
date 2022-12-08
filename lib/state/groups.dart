@@ -30,22 +30,22 @@ class Group {
   final GroupMetadata _metadata;
   final GroupMemberCollection _members;
   final ChecklistCollection _checklists;
-  final GroupMemberId _myself;
+  final GroupMemberId _owner;
 
   Group(
       {required GroupMetadata metadata,
       GroupMemberCollection? members,
       List<Checklist>? checklists,
-      required GroupMemberId myself})
+      required GroupMemberId owner})
       : _metadata = metadata,
         _members = members ?? GroupMemberCollection(),
         _checklists = ChecklistCollection(checklists: checklists), 
-        _myself = myself;
+        _owner = owner;
 
   GroupMetadata get metadata => _metadata;
   GroupMemberCollection get members => _members;
   ChecklistCollection get checklists => _checklists;
-  GroupMemberId get myself => _myself;
+  GroupMemberId get owner => _owner;
 }
 
 class GroupMetadata extends ChangeNotifier {
@@ -62,7 +62,9 @@ class GroupMetadata extends ChangeNotifier {
 }
 
 class GroupMemberCollection extends ChangeNotifier {
-  final List<GroupMember> _members = [];
+  final List<GroupMember> _members;
+
+  GroupMemberCollection({List<GroupMember>? members}) : _members = members ?? [];
 
   void addMember(GroupMember member) {
     _members.add(member);
@@ -111,4 +113,4 @@ class GroupMemberMetadata extends ChangeNotifier {
   }
 }
 
-class GroupMemberId {}
+class GroupMemberId extends ChangeNotifier{}

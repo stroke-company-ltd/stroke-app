@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
 import 'package:stroke/shared_prefs.dart';
-import 'package:stroke/widgets/home_page.dart';
 import 'package:tuple/tuple.dart';
+/*
 
 class DeveloperModeSwitch extends ChangeNotifier {
   static const String _prefKey = "developer-mode";
@@ -230,3 +230,4 @@ class _DevModeNetworkingPage extends StatelessWidget{
 }
 
 
+*/
