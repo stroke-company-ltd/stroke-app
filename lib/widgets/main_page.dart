@@ -65,40 +65,5 @@ class MainPage extends StatelessWidget {
         ),
       ),
     );
-
-    // return ChangeNotifierProvider.value(
-    //   value: id,
-    //   child: GroupPageViewProviderWidget(
-    //     group: Group(
-    //       metadata: GroupMetadata(name: "Waschliste"),
-    //       checklists: [
-    //         Checklist(
-    //           metadata: ChecklistMetadata(name: "Waschmaschine"),
-    //         ),
-    //         Checklist(
-    //           metadata: ChecklistMetadata(name: "Trockner"),
-    //         ),
-    //       ],
-    //       members: GroupMemberCollection(
-    //         members: [
-    //           GroupMember(
-    //             metadata: GroupMemberMetadata(name: "karl"),
-    //           ),
-    //         ],
-    //       ),
-    //       owner: id,
-    //     ),
-    //   ),
-    // );
-
-    // return ChangeNotifierProvider.value(
-    //   value: id,
-    //   child: ChecklistProviderWidget(
-    //     checklist: Checklist(
-    //       metadata: ChecklistMetadata(name: "Waschmaschine"),
-    //       owner: id,
-    //     ),
-    //   ),
-    // );
   }
 }

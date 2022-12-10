@@ -29,7 +29,7 @@ class GroupsPageViewWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
-    for (Group group in context.watch<GroupCollection>().groups){
+    for (Group group in context.watch<GroupCollection>().groups) {
       children.add(GroupPageViewProviderWidget(group: group));
     }
     children.add(const NewGroupCard());
@@ -46,6 +46,7 @@ class NewGroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int devModeCounter = 0;
     return Scaffold(
       body: Stack(
         children: [
@@ -76,7 +77,24 @@ class NewGroupCard extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
+          Container(
+            alignment: Alignment.topRight,
+            child: Opacity(
+              opacity: 0.0,
+              child: IconButton(
+                onPressed: () {
+                  devModeCounter++;
+                  if (devModeCounter > 10) {
+                    print("toggle dev mode");
+                  }
+                },
+                padding: EdgeInsets.zero,
+                iconSize: 100,
+                icon: const Icon(Icons.build),
+              ),
+            ),
+          ),
         ],
       ),
     );
