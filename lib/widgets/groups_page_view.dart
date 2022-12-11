@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:stroke/state/dev_mode_switch.dart';
 import 'package:stroke/state/groups.dart';
 import 'package:stroke/widgets/group_page_view.dart';
 import 'package:stroke/widgets/placeholder_page.dart';
@@ -47,6 +48,7 @@ class NewGroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int devModeCounter = 0;
+    DeveloperModeSwitch devSwitch = context.read<DeveloperModeSwitch>();
     return Scaffold(
       body: Stack(
         children: [
@@ -86,7 +88,8 @@ class NewGroupCard extends StatelessWidget {
                 onPressed: () {
                   devModeCounter++;
                   if (devModeCounter > 10) {
-                    print("toggle dev mode");
+                    devSwitch.toggle();
+                    devModeCounter=0;
                   }
                 },
                 padding: EdgeInsets.zero,

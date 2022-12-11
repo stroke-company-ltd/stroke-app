@@ -1,82 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
-import 'package:settings_ui/settings_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stroke/console.dart';
 import 'package:stroke/error_handler.dart';
-import 'package:stroke/shared_prefs.dart';
 import 'package:tuple/tuple.dart';
-/*
 
-class DeveloperModeSwitch extends ChangeNotifier {
-  static const String _prefKey = "developer-mode";
-  static SharedPreferences? _prefs;
-
-  bool _enabled;
-
-  DeveloperModeSwitch({required bool enabled}) : _enabled = enabled;
-
-  factory DeveloperModeSwitch.fromPrefs() {
-    if (_prefs == null) {
-      var tmp = DeveloperModeSwitch(enabled: false);
-      //schedule pref init.
-      () async {
-        _prefs = await SharedPreferences.getInstance();
-        bool? devMode = _prefs!.getBool(_prefKey);
-        if (devMode != null) {
-          if (tmp.isEnabled && !devMode) await tmp.disable();
-          if (!tmp.isEnabled && devMode) await tmp.enable();
-        }
-      }();
-      return tmp;
-    } else {
-      bool? devMode = _prefs!.getBool(_prefKey);
-      devMode ??= false;
-      return DeveloperModeSwitch(enabled: devMode);
-    }
-  }
-
-  bool get isEnabled => _enabled;
-
-  Future<void> enable() async {
-    if (_enabled == true) return;
-    _enabled = true;
-    await _savePersistant();
-    notifyListeners();
-  }
-
-  Future<void> disable() async {
-    if (_enabled == false) return;
-    _enabled = false;
-    await _savePersistant();
-    notifyListeners();
-  }
-
-  Future<void> toggle() async {
-    _enabled = !_enabled;
-    await _savePersistant();
-    notifyListeners();
-  }
-
-  Future<void> _savePersistant() async {
-    await SharedPrefs.setDeveloperMode(_enabled);
-  }
-}
-
-class DevHomePage extends HomePage {
-  DevHomePage()
-      : super.from(
-            label: "development",
-            iconSelected: const Icon(Icons.build_circle),
-            iconUnselected: const Icon(Icons.build_circle_outlined),
-            primaryColor: Colors.red,
-            widget: const _DevHomePageWidget());
-}
-
-class _DevHomePageWidget extends StatelessWidget {
+class DeveloperModeMainWidget extends StatelessWidget {
   //static final GlobalKey<NavigatorState> _navKey = GlobalKey();
-  const _DevHomePageWidget({Key? key}) : super(key: key);
+  const DeveloperModeMainWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -85,14 +16,20 @@ class _DevHomePageWidget extends StatelessWidget {
       const _DevModeDatabasePage(),
       const _DevModeNetworkingPage(),
     ];
-    return PageView.builder(
-      scrollDirection: Axis.horizontal,
-      physics: const PageScrollPhysics(),
-      controller: PageController(),
-      itemCount: pages.length,
-      itemBuilder: (context, idx) {
-        return pages[idx % pages.length];
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: Console.instance),
+        ChangeNotifierProvider.value(value: ErrorHandler.getInstance())
+      ],
+      child: PageView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const PageScrollPhysics(),
+        controller: PageController(),
+        itemCount: pages.length,
+        itemBuilder: (context, idx) {
+          return pages[idx % pages.length];
+        },
+      ),
     );
   }
 }
@@ -122,7 +59,8 @@ class _DevModeConsolePage extends StatelessWidget {
                 child: RichText(
                     text: TextSpan(
                   text: ">\$ : ",
-                  style: const TextStyle(color: Colors.yellow, fontSize: fontSize),
+                  style:
+                      const TextStyle(color: Colors.yellow, fontSize: fontSize),
                   children: [
                     TextSpan(
                         text: log.log,
@@ -149,7 +87,8 @@ class _DevModeConsolePage extends StatelessWidget {
                 child: RichText(
                     text: TextSpan(
                   text: ">\$ : ",
-                  style: const TextStyle(color: Colors.yellow, fontSize: fontSize),
+                  style:
+                      const TextStyle(color: Colors.yellow, fontSize: fontSize),
                   children: [
                     TextSpan(
                         text: error.summary,
@@ -201,33 +140,26 @@ class _DevModeDatabasePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Center(child: Text("Local Data")),
-        backgroundColor : Colors.red
-      ),
-      body : Builder( builder : (context){
+        appBar: AppBar(
+            title: const Center(child: Text("Local Data")),
+            backgroundColor: Colors.red),
+        body: Builder(builder: (context) {
           throw UnimplementedError();
-      })
-    );
+        }));
   }
 }
 
-class _DevModeNetworkingPage extends StatelessWidget{
-  const _DevModeNetworkingPage({Key? key}) : super(key : key);
+class _DevModeNetworkingPage extends StatelessWidget {
+  const _DevModeNetworkingPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Center(child: Text("Networking")),
-        backgroundColor : Colors.red
-      ),
-      body : Builder( builder : (context){
+        appBar: AppBar(
+            title: const Center(child: Text("Networking")),
+            backgroundColor: Colors.red),
+        body: Builder(builder: (context) {
           throw UnimplementedError();
-      })
-    );
+        }));
   }
 }
-
-
-*/
